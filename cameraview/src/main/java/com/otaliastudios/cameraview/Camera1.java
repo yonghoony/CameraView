@@ -54,17 +54,26 @@ class Camera1 extends CameraController implements Camera.PreviewCallback, Camera
     }
 
     private void schedule(@Nullable final Task<Void> task, final boolean ensureAvailable, final Runnable action) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (ensureAvailable && !isCameraAvailable()) {
-                    if (task != null) task.end(null);
-                } else {
-                    action.run();
-                    if (task != null) task.end(null);
-                }
-            }
-        });
+        // TODO(yonghoon): This is just to see how it works all synchronously.
+        if (ensureAvailable && !isCameraAvailable()) {
+            if (task != null) task.end(null);
+        } else {
+            action.run();
+            if (task != null) task.end(null);
+        }
+
+//        mHandler.post(new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                if (ensureAvailable && !isCameraAvailable()) {
+//                    if (task != null) task.end(null);
+//                } else {
+//                    action.run();
+//                    if (task != null) task.end(null);
+//                }
+//            }
+//        });
     }
 
     // Preview surface is now available. If camera is open, set up.
