@@ -151,4 +151,7 @@ public abstract class CameraListener {
 
     }
 
+    @UiThread
+    public void onVideoRecordStateChanged(@NonNull VideoRecordState videoRecordState) {
+    }
 }

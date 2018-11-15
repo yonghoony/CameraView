@@ -1498,6 +1498,7 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         void dispatchOnExposureCorrectionChanged(float newValue, float[] bounds, PointF[] fingers);
         void dispatchFrame(Frame frame);
         void dispatchError(CameraException exception);
+        void dispatchVideoRecordStateChanged(VideoRecordState videoRecordState);
     }
 
     private class Callbacks implements CameraCallbacks {
@@ -1759,6 +1760,27 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
                 }
             });
         }
+
+        @Override
+        public void dispatchVideoRecordStateChanged(final VideoRecordState videoRecordState) {
+            mLogger.i("dispatchVideoRecordStateChanged", videoRecordState);
+            mUiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (CameraListener listener : mListeners) {
+                        listener.onVideoRecordStateChanged(videoRecordState);
+                    }
+                }
+            });
+        }
+    }
+
+    public CameraPreview getCameraPreview() {
+        return mCameraPreview;
+    }
+
+    public CameraController getCameraController() {
+        return mCameraController;
     }
 
     //endregion

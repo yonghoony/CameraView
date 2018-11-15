@@ -632,9 +632,11 @@ class Camera1 extends CameraController implements Camera.PreviewCallback, Camera
 
     @Override
     void startVideo(@NonNull final File videoFile) {
+        setVideoRecordState(VideoRecordState.SCHEDULED_TO_START);
         schedule(mStartVideoTask, true, new Runnable() {
             @Override
             public void run() {
+                setVideoRecordState(VideoRecordState.STARTING);
                 if (mIsCapturingVideo) return;
                 if (mSessionType == SessionType.VIDEO) {
                     mVideoFile = videoFile;
@@ -643,6 +645,7 @@ class Camera1 extends CameraController implements Camera.PreviewCallback, Camera
                     try {
                         mMediaRecorder.prepare();
                         mMediaRecorder.start();
+                        setVideoRecordState(VideoRecordState.STARTED);
                     } catch (Exception e) {
                         LOG.e("Error while starting MediaRecorder. Swallowing.", e);
                         mVideoFile = null;
@@ -658,6 +661,7 @@ class Camera1 extends CameraController implements Camera.PreviewCallback, Camera
 
     @Override
     void endVideo() {
+        setVideoRecordState(VideoRecordState.SCHEDULED_TO_END);
         schedule(null, false, new Runnable() {
             @Override
             public void run() {
@@ -668,6 +672,7 @@ class Camera1 extends CameraController implements Camera.PreviewCallback, Camera
 
     @WorkerThread
     private void endVideoImmediately() {
+        setVideoRecordState(VideoRecordState.ENDING);
         LOG.i("endVideoImmediately:", "is capturing:", mIsCapturingVideo);
         mIsCapturingVideo = false;
         if (mMediaRecorder != null) {
@@ -684,6 +689,7 @@ class Camera1 extends CameraController implements Camera.PreviewCallback, Camera
             mCameraCallbacks.dispatchOnVideoTaken(mVideoFile);
             mVideoFile = null;
         }
+        setVideoRecordState(VideoRecordState.IDLE);
     }
 
     @WorkerThread
@@ -700,9 +706,10 @@ class Camera1 extends CameraController implements Camera.PreviewCallback, Camera
         CamcorderProfile profile = getCamcorderProfile();
         mMediaRecorder.setOutputFormat(profile.fileFormat);
         mMediaRecorder.setVideoFrameRate(profile.videoFrameRate);
-        // TODO(yonghoon): Revert this after testing the jitpack repository.
-//        mMediaRecorder.setVideoSize(profile.videoFrameWidth, profile.videoFrameHeight);
-        mMediaRecorder.setVideoSize(414, 736);
+
+        Log.d(TAG, "setVideoSize " + profile.videoFrameWidth + " " + profile.videoFrameHeight);
+        mMediaRecorder.setVideoSize(profile.videoFrameWidth, profile.videoFrameHeight);
+
         if (mVideoCodec == VideoCodec.DEFAULT) {
             mMediaRecorder.setVideoEncoder(profile.videoCodec);
         } else {

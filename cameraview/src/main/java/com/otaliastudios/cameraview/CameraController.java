@@ -9,9 +9,11 @@ import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
+import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -68,6 +70,7 @@ abstract class CameraController implements
 
     protected boolean mIsCapturingImage = false;
     protected boolean mIsCapturingVideo = false;
+    public VideoRecordState videoRecordState = VideoRecordState.IDLE;
 
     protected int mState = STATE_STOPPED;
 
@@ -88,6 +91,21 @@ abstract class CameraController implements
         mHandler = WorkerHandler.get("CameraViewController");
         mHandler.getThread().setUncaughtExceptionHandler(this);
         mFrameManager = new FrameManager(2, this);
+    }
+
+    public MediaRecorder getMediaRecorder() {
+        return mMediaRecorder;
+    }
+
+    void setVideoRecordState(VideoRecordState videoRecordState) {
+        if (this.videoRecordState != videoRecordState) {
+
+            Log.d(TAG, "setVideoRecordState " + this.videoRecordState
+                + " -> " + videoRecordState);
+            this.videoRecordState = videoRecordState;
+
+            mCameraCallbacks.dispatchVideoRecordStateChanged(videoRecordState);
+        }
     }
 
     void setPreview(CameraPreview cameraPreview) {
